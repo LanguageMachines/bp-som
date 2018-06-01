@@ -1,0 +1,53 @@
+/*PROBEN1.HLP*/
+/*===========*/
+
+/*--------------------------------------------------------*/
+/* OUTPUT OK?                                             */
+/*--------------------------------------------------------*/
+
+/* WINNER TAKES ALL */
+
+int res_ok(void)
+{
+  int winner_outp=1, winner_target=1;
+  float winner_outp_v, winner_target_v;
+  int i, ress=1;
+
+  winner_outp_v=act[LAST_LAYER][1];
+  winner_target_v=target[1];
+
+  for (i=2; i<=n[LAST_LAYER]; i++) {
+    if (act[LAST_LAYER][i]>winner_outp_v) {
+      winner_outp_v=act[LAST_LAYER][i];
+      winner_outp=i;
+    }
+    if (target[i]>winner_target_v) {
+      winner_target_v=target[i];
+      winner_target=i;
+    }
+  }
+  if (winner_target==winner_outp) {
+    ress=1;
+  } else {
+    ress=0;
+  }
+  confusion_matrix[winner_target][winner_outp]++;
+  return ress;
+}
+
+/* BASIC READ FUNCTION */
+
+void read_input_target(void)
+{
+  int i;
+  for (i = 1; (i<=n[0]); i++) {
+    fscanf(fpin, "%f", &act[0][i]);
+  }
+  for (i = 1; i < n[LAST_LAYER]+1; i++) {
+    fscanf(fpin, "%f", &target[i]);
+    /* Labels -A-|-B-|... */
+    if (target[i]>0.599) { labeln = i; }
+  }
+  fscanf(fpin, "\n");
+}
+
