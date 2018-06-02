@@ -1,0 +1,97 @@
+/* GRAPHO.HLP */
+
+#define ALPHABET   "_'-.abcdefghijklmnopqrstuvwxyzàâäçèéêïñôöü"
+/* #define ALPHABET   "_'-.abcdefghijklmnopqrstuvwxyz" */
+#define PCLASSES   "#$+-0123456789<>@DEFGHIJNPQRSTUVXZ[]_bcdfghijklmnpqrstuvwxz{}~"
+#define NRVALS 42
+
+void  read_input_target(void);
+void  man_read_input_target(void);
+int   res_ok(void);
+
+
+/*--------------------------------------------------------*/
+/* OUTPUT OK?                                             */
+/*--------------------------------------------------------*/
+
+/* WINNER TAKES ALL */
+
+int res_ok(void)
+{
+  int winner_outp=1, winner_target=1;
+  float winner_outp_v, winner_target_v;
+  int i, ress=1;
+
+  winner_outp_v=act[last_layer][1];
+  winner_target_v=target[1];
+
+  for (i=2; i<=N[last_layer]; i++) {
+    if (act[last_layer][i]>winner_outp_v) {
+      winner_outp_v=act[last_layer][i];
+      winner_outp=i;
+    }
+    if (target[i]>winner_target_v) {
+      winner_target_v=target[i];
+      winner_target=i;
+    }
+  }
+  if (winner_target==winner_outp) {
+    ress=1;
+  } else {
+    ress=0;
+  }
+  bp_confusion_matrix[winner_target][winner_outp]++;
+  return ress;
+
+}
+
+/* BASIC READ FUNCTION */
+
+void read_input_target(void)
+{
+  int i,j,k;
+  char readchar;
+  char readcat[10];
+
+
+  /* free(act[0]);
+  act[0]=(float *) calloc((unsigned) N[0]+1, sizeof(float));
+  for (i=0; i<N[0]+1; i++)
+    act[0][i]=0.0; */
+
+  for (i=1; (i<=PATWIDTH); i++) {
+    fscanf(fpin, "%c", &readchar);
+    j=0;
+    while (readchar!=ALPHABET[j]) j++;
+    /* act[0][1+((i-1)*NRVALS)+j]=1.0; */
+    onact[i-1]=1+((i-1)*NRVALS)+j;
+  }
+
+  /* free(target);
+  target=(float *) calloc((unsigned) N[last_layer]+1, sizeof(float)); */
+  for (i=0; i<N[last_layer]+1; i++)
+    target[i]=0.1;
+
+  fscanf(fpin, " %s ", readcat);
+  j=0;
+  while (readcat[0]!=PCLASSES[j])
+    j++;
+  target[1+j]=0.9;
+  labeln = 1+j;
+
+}
+
+/* MANUAL READ FUNCTION */
+
+void man_read_input_target(void)
+{
+  int i;
+  printf("\n%d inputs: ", N[0]); 
+  for (i=1; (i<=N[0]); i++) { scanf("%f", &act[0][i]); }
+  printf("\n%d outputs: ", N[last_layer]);
+  for (i=1; i<N[last_layer]+1; i++) {
+    scanf("%f", &target[i]);
+    /* Labels -A-|-B-|... */
+    if (target[i]>0.599) { labeln = i; }
+  }
+}
