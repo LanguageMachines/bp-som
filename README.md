@@ -121,7 +121,9 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 * **Ton Weijters** - *Initial work in 1990s*
 * **Antal van den Bosch** - *additional work in 1990s, revival in 2018* -  [antalvdb](https://github.com/antalvdb)
 
+<!---
 See also the list of [contributors](https://github.com/your/project/contributors) who participate in this project.
+--->
 
 ## License
 
@@ -131,4 +133,4 @@ This project is licensed under the GNU Public License version 3.0 - see the [LIC
 
 * Ton Weijters for coining and developing the BP-SOM idea and for graciously allowing the code to be revived;
 * Eric Postma and Jaap van den Herik for support and discussions, and co-writing some of the original papers;
-* The Language Machine team (the Lamas) for moral support.
+* The Language Machine team (the Lamas) for the revival of the project 20 years later.
