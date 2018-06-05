@@ -16,3 +16,6 @@ bpsom:	bpsom.o
 
 clean:
 	-rm bpsom bpsom.o
+
+check:
+	echo "OK"
