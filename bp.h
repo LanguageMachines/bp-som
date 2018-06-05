@@ -50,15 +50,13 @@ void forward(void)
 {
   int l;
   register int i, j;
-  float summ;
 
   /* first an Antal hack: use the fact that most input units have
      activation 0.0 */
 
   act[0][0]=1.0;
-  summ=0.0;
   for (j=0; j<=N[1]; j++) {
-    summ=weight[0][0][j];
+    float summ=weight[0][0][j];
     for (i=0; i<PATWIDTH; i++) {
       summ+=weight[0][onact[i]][j];
     }
@@ -67,9 +65,8 @@ void forward(void)
 
   for (l=1; l<last_layer; l++) {
     act[l][0]=1.0;
-    summ=0.0;
     for (j=0; j<=N[l+1]; j++) {
-      summ=weight[l][0][j];
+      float summ=weight[l][0][j];
       for (i=1; i<=N[l]; i++) {
         summ+=(weight[l][i][j] * act[l][i]);
       }
@@ -139,9 +136,9 @@ void backprop(float mm)
       weight[0][onact[j]][i]+= /* ((1.0 - WEIGHT_DECAY_RATE) * */
   	del_old[0][onact[j]][i];
     }
-  } 
+  }
 
-  for (l=0; l<=last_layer-1; l++) { 
+  for (l=0; l<=last_layer-1; l++) {
     for (i=1; i<=N[l+1]; i++) {
       if (fabs(target[i]-act[last_layer][i])>ERROR_LEARN_THRESHOLD) {
       /* if (error[l+1][i]>DONOTHING) { */
@@ -204,7 +201,7 @@ void screen_dump_result(int vb_ok)
     }
   }
   for (i=1; i<=N[0]; i++) { printf("%6.4f,", act[0][i]); }
-  
+
   for (l=1; l<=last_layer; l++) {
     printf("\nL%d: ", l);
     for (i=1; i<=N[l]; i++) { printf("%6.4f,", act[l][i]); }
