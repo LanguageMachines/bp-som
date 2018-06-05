@@ -7,7 +7,7 @@ CC = gcc
 all:	bpsom
 
 bpsom:	bpsom.c
-	$(CC) $(C_ARGS) -o $@ $^
+	$(CC) $(C_ARGS) -o $@ $^ -lm
 
 clean:
 	-rm bpsom
