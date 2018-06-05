@@ -9,7 +9,7 @@ DEPS = bp.h som.h
 all:	bpsom
 
 %o: %c $(DEPS)
-	$(CC) -c -o $@ @< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
 bpsom:	bpsom.o
 	$(CC) -o $@ $^ -lm
