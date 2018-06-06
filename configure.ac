@@ -19,10 +19,10 @@ if $cxx_flags_were_set; then
 fi
 
 # Checks for programs.
-AC_PROG_CXX( [gcc] )
+AC_PROG_CXX( [g++] )
 
 # when running tests, use CXX
-AC_LANG([C])
+AC_LANG([C++])
 
 # use libtool
 AC_PROG_LIBTOOL

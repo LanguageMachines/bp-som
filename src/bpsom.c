@@ -172,7 +172,7 @@ char **argv;
   if (argc>=2) {
     read_parameters(argv[1]);
   } else {
-    printf("\nName parameter file: "); gets(buff); read_parameters(buff);
+    printf("\nName parameter file: "); fgets(buff,NAME_L,stdin); read_parameters(buff);
   }
   open_log();
   dump_parameters();
@@ -532,7 +532,7 @@ void cheque_parameters(void)
       fatal_error();
     }
   }
-  if ((INCLUDE3=="proben1.hlp") && (n_labels!=N[last_layer])) {
+  if ((strcmp(INCLUDE3,"proben1.hlp") == 0) && (n_labels!=N[last_layer])) {
     printf("\nWarning: posibble error in labelstring (%d) or dim-outputlayer MFN (%d)",
     n_labels, N[last_layer]);
   }

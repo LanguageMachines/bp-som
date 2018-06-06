@@ -79,7 +79,7 @@ void backprop(float mm)
 {
   register int l, i;
   int j;
-  float bp_error_use, bp_error, som_error;
+  float bp_error_use, bp_error, som_error=0.0;
 
   /* output errors */
   for (i=1; i<=N[last_layer]; i++) {
