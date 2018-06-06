@@ -48,12 +48,11 @@ before_install:
   - export PATH="/usr/lib/ccache/bin/:$PATH"
 
 install:
-#  - bash bootstrap.sh
-#  - ./configure
+  - bash bootstrap.sh
+  - ./configure
   - cppcheck --enable=all --quiet --error-exitcode=0 .
-#  - $SCAN --status-bugs ./configure
   - $SCAN --status-bugs make
   - make
-#  - sudo make install
+  - sudo make install
 script:
   - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib make check
