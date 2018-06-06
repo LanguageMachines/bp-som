@@ -29,9 +29,9 @@
 #include <time.h>
 #include <limits.h>
 
-#define INCLUDE1 "bp.h"
-#define INCLUDE2 "som.h"
-#define INCLUDE3 "grapho.hlp"
+#define INCLUDE1 "bpsom/bp.h"
+#define INCLUDE2 "bpsom/som.h"
+#define INCLUDE3 "bpsom/grapho.hlp"
 
 #define EVER ;;
 #define MAX_UNITS 500
@@ -193,7 +193,7 @@ char **argv;
 
   clear_prune_information();
   for (i=0;i<=MAX_LABELS;i++) { fraction[i]=0.0; }
-  
+
   for (EVER) {
     epoch++; nothing_done++;
     if ((epoch > N_EPOCHS) || (nothing_done>STOP_IF_NOTHING_DONE)) {
@@ -261,7 +261,7 @@ void complete_epoch(int lrn_yn, int material)
     if (res_ok()==1) { tel_ok++; vb_ok=1; } else { vb_ok=0; }
     mse+=(example_error=count_error());
     process_som_vectors(lrn_yn, material);
-    
+
     if (DUMP>0) dump_result(vb_ok);
     if (DUMP>2) screen_dump_result(vb_ok);
     if (material==1) {
@@ -692,7 +692,7 @@ void read_environment(char *filename)
   int l, i, j, x, y;
 
   fprintf(stderr,"opening %s\n",filename);
-  
+
   open_fpin(filename);
   fprintf(fplog, "\n\nNew network format: ");
   for (l=0; l<=MAX_LAST_LAYER; l++) {
