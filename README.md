@@ -8,17 +8,17 @@ Further reading:
 
 * Weijters, A. (1995). The BP-SOM architecture and learning algorithm.
   *Neural Processing Letters*, **2:6**, pp. 13-16.
-   
+
 * Weijters, A., Van den Bosch, A., and Van den Herik,
   H.J. (1997). Behavioural aspects of combining back-propagation and
   self-organizing maps. *Connection
     Science*, **9:3**, pp. 253-252.
-	  
+
 * Weijters, A., Van den Herik, H.J., Van den Bosch, A., and
 Postma, E. (1997). [Avoiding overfitting with BP-SOM.](https://www.ijcai.org/Proceedings/97-2/Papers/051.pdf) In
 *Proceedings of the Fifteenth International Joint Conference on
     Artificial Intellgence*, IJCAI-97, pp. 1140-1145.
-	
+
 * Weijters, A., Van den Bosch, A., and Van den
   Herik, H.J. (1998). [Interpretable neural networks with BP-SOM.](https://link.springer.com/content/pdf/10.1007%2FBFb0026711.pdf) In
   C. Nedellec and C. Rouveirol (Eds.), *Machine Learning:
@@ -30,12 +30,12 @@ Postma, E. (1997). [Avoiding overfitting with BP-SOM.](https://www.ijcai.org/Pro
   (Eds.), *Tasks and Methods in Applied Artificial Intelligence:
     Proceedings of the 11th International Conference on Industrial and
     Engineering Applications of Artificial Intelligence and Expert
-    Systems*, Vol II, Lecture Notes in Artificial Intelligence, Vol. 
+    Systems*, Vol II, Lecture Notes in Artificial Intelligence, Vol.
   1416. Berlin: Springer, pp 564-573.
 
-* Weijters, A., and Van den Bosch, A. (1999). [Interpreting 
+* Weijters, A., and Van den Bosch, A. (1999). [Interpreting
 knowledge representations in BP-SOM.](https://www.jstage.jst.go.jp/article/bhmk1974/26/1/26_1_107/_pdf)
-*Behaviormetrika*, **26:1**, pp. 107-128. 
+*Behaviormetrika*, **26:1**, pp. 107-128.
 
 * Weijters, A., Van den Bosch, A., and Postma, E. (2000). [Learning
   statistically neutral tasks without expert guidance.](https://papers.nips.cc/paper/1780-learning-statistically-neutral-tasks-without-expert-guidance.pdf) In: S.A. Solla,
@@ -62,9 +62,10 @@ Give examples
 You can compile the code with
 
 ```
-make
+sh bootstrap.sh
+./configure [--prefix=place-to-install]
+make [install]
 ```
-
 <!---
 And repeat
 
@@ -113,7 +114,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 --->
 
