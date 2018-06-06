@@ -69,10 +69,10 @@ void  reset_bp_confusion_matrix(void);
 void  dump_bp_confusion_matrix(void);
 void  make_labels_from_all_labels(void);
 void  fatal_error(void);
-void  drange_cheque(char *par, int *value,
-                    int min, int max, int def);
-void  frange_cheque(char *par, float *value,
-                    float min, float max, float def);
+void  drange_cheque( const char *par, int *value,
+		     int min, int max, int def);
+void  frange_cheque( const char *par, float *value,
+		     float min, float max, float def);
 
 /* global BP-SOM-variables  */
 
@@ -162,9 +162,7 @@ float SOM_MAX_LEARN_RATE, SOM_MIN_LEARN_RATE;
 #include INCLUDE2
 #include INCLUDE3
 
-int main(argc, argv)
-int argc;
-char **argv;
+int main( int argc, char ** argv)
 {
   int i;
   char buff[NAME_L];
@@ -839,8 +837,8 @@ void fatal_error(void)
   exit(0);
 }
 
-void drange_cheque(char *par, int *value,
-                   int min, int max, int def)
+void drange_cheque( const char *par, int *value,
+		    int min, int max, int def)
 {
   if ((*value>max) || (*value<min)) {
     printf("\nWarning: %s = %d out of range (%d .. %d);",
@@ -857,8 +855,8 @@ void drange_cheque(char *par, int *value,
   }
 }
 
-void frange_cheque(char *par, float *value,
-                   float min, float max, float def)
+void frange_cheque( const char *par, float *value,
+		    float min, float max, float def)
 {
   if ((*value>max) || (*value<min)) {
     printf("\nWarning: %s = %6.5f out of range (%6.5f .. %6.5f);",
