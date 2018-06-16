@@ -76,20 +76,19 @@ until finished
 End with an example of getting some data out of the system or using it for a little demo
 --->
 
+## Running an experiment
+
+bpsom takes a configuration file as argument. An example config file, example-grapho.prm, can be found in the examples directory.
+
+### A test run
+
+You can run bpsom on the example by running:
+
+```
+bpsom examples/example-grapho.prm
+```
+
 <!---
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
 ### And coding style tests
 
 Explain what these tests test and why
