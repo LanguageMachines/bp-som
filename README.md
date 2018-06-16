@@ -74,18 +74,21 @@ until finished
 ```
 
 End with an example of getting some data out of the system or using it for a little demo
---->
 
 ## Running an experiment
 
-bpsom takes a configuration file as argument. An example config file, example-grapho.prm, can be found in the examples directory.
+
+--->
+
 
 ### A test run
 
-You can run bpsom on the example by running:
+bpsom takes a configuration file as argument. An example config file, example-grapho.prm, can be found in the examples directory.
+You can run bpsom on the example by going to the examples directory and invoking bpsom:
 
 ```
-bpsom examples/example-grapho.prm
+cd examples
+bpsom example-grapho.prm
 ```
 
 <!---
