@@ -103,14 +103,31 @@ bpsom will start producing output such as:
 1/100 means it is in the first of a maximum of 100 epochs. During
 learning (LRN=1) it monitors its progress on the training data
 (MAT=1), measuring a mean squared error of 0.935 and a classification
-error of 39.23 (MSE=0.935 CE=39.23). The SOM, aligned with the single
-hidden layer, is not used for now (USE SOM1= 0.0).
+error of 39.23% (MSE=0.935 CE= 39.23). The SOM, aligned with the single
+hidden layer, has not been adding its error signals into the
+back-propagating error yet (USE SOM1= 0.0).
 
 The next three lines provide scores on the three types of data
 provided, while activation is only fed forward (i.e., training is off,
 LRN=0): the scores on training data (MAT=1), development data (MAT=2),
 and test data (MAT=3). Development data is used to determine whether
-the early stopping criterion applies.
+the early stopping criterion applies. At the first epoch and at any
+future epoch in which the MSE improves, the network is saved
+(indicated by the asterisk, *).
+
+When the stopping criterion is reached, or when 100 epochs have
+finished, the output is as follows:
+
+```
+opening exp-grapho-bpsom-a10.bst
+66/100 LRN=0 MAT=3 MSE=0.578 CE=  9.89 USE SOM1=  0.0 
+16/100 LRN=0 MAT=1 MSE=0.656 CE=  7.21 USE SOM1=  0.0 
+16/100 LRN=0 MAT=3 MSE=0.661 CE=  7.80 USE SOM1=  0.0 
+```
+
+This means that the lowest MSE was attained after epoch 16, when
+classification error on the test data was 7.80%. At that point, the
+SOM was not used.
 
 <!---
 ### And coding style tests
