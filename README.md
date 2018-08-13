@@ -1,4 +1,4 @@
-# Project Title
+# BP-SOM
 
 BP-SOM implements a combination of a multilayered feedforward network (MFN) and one or more self-organising maps (SOMs);
 each hidden layer of the MFN has its corresponding SOM. Training a BP-SOM is a combination of supervised learning with the
@@ -111,12 +111,13 @@ The next three lines provide scores on the three types of data
 provided, while activation is only fed forward (i.e., training is off,
 LRN=0): the scores on training data (MAT=1), development data (MAT=2),
 and test data (MAT=3). Development data is used to determine whether
-the early stopping criterion applies. At the first epoch and at any
-future epoch in which the MSE improves, the network is saved
-(indicated by the asterisk, *).
+the early stopping criterion applies (a predetermined number of epochs
+is reached in which the CE on the development data does not
+improve). At the first epoch and at any future epoch in which the CE
+improves, the network is saved (indicated by the asterisk, *).
 
 When the stopping criterion is reached, or when 100 epochs have
-finished, the output is as follows:
+finished, the following output is generated:
 
 ```
 opening exp-grapho-bpsom-a10.bst
@@ -127,7 +128,45 @@ opening exp-grapho-bpsom-a10.bst
 
 This means that the lowest MSE was attained after epoch 16, when
 classification error on the test data was 7.80%. At that point, the
-SOM was not used.
+SOM was not used. The network's state at epoch 16 is saved in the file
+exp-grapho-bpsom-a10.bst .
+
+### Inspecting the log file
+
+After a full experimental run involving learning and testing, a log
+file is produced which can be inspected afterwards. This allows
+ascertaining whether and to what extent the SOM became organized
+during learning, and how it influenced hidden unit activation
+behavior. After a dump of the full configuration and the distribution
+of classes in the training data, the log file contains for each epoch
+
+* the learning progress as also displayed in the console as stdout;
+* the majority class labeling for the SOM(s);
+* the average hidden unit activations and their standard deviations
+for all hidden layers.
+
+The majority class labeling displays for each SOM unit the class that
+is most prominently mapped onto that unit:
+
+```
+Class labeling SOM: 1
+
+      1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20
+     53  73  37   0  64  53  46  71  74  98  99  78  47 100  93  90  82  78  91  82
+  1 -{- -{- -@-     --- -k- -k- -s- -s- -s- -s- -s- -z- -f- -f- -f- -n- -n- -n- -n-
+    964 1577 1484   0 1737 794 1229 1766 166 3643 2623 561 2366  26 3203 1944 764 1899 1326 1853
+
+...
+
+     99  55  83   0  83  95  96  56  94  62  98  98 100  49  56  96  56  84   0  45
+ 20 --- -s- -z-     -d- -d- -t- --- -I- -I- -I- -I- -I- -@- --- --- --- ---     -#-
+    2045  70 6281   0 5789 2020 6645 398 5665 303 2931 4736  15 1653 3251 5861  46 2550   0 1989
+```
+
+If we inspect the second SOM unit in the last line (unit 20,2), we see that 70
+training vectors map onto this SOM unit, 55 of which are labeled with
+class "-s-". We also see that the fourth unit in the same line (unit
+20,4) is empty; no training vectors are mapped on it.
 
 <!---
 ### And coding style tests
