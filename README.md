@@ -4,44 +4,6 @@ BP-SOM implements a combination of a multilayered feedforward network (MFN) and 
 each hidden layer of the MFN has its corresponding SOM. Training a BP-SOM is a combination of supervised learning with the
 traditional back-propagation (BP) learning rule guided by clustering information in the SOMs.
 
-Further reading:
-
-* Weijters, A. (1995). The BP-SOM architecture and learning algorithm.
-  *Neural Processing Letters*, **2:6**, pp. 13-16.
-
-* Weijters, A., Van den Bosch, A., and Van den Herik,
-  H.J. (1997). Behavioural aspects of combining back-propagation and
-  self-organizing maps. *Connection
-    Science*, **9:3**, pp. 253-252.
-
-* Weijters, A., Van den Herik, H.J., Van den Bosch, A., and
-Postma, E. (1997). [Avoiding overfitting with BP-SOM.](https://www.ijcai.org/Proceedings/97-2/Papers/051.pdf) In
-*Proceedings of the Fifteenth International Joint Conference on
-    Artificial Intellgence*, IJCAI-97, pp. 1140-1145.
-
-* Weijters, A., Van den Bosch, A., and Van den
-  Herik, H.J. (1998). [Interpretable neural networks with BP-SOM.](https://link.springer.com/content/pdf/10.1007%2FBFb0026711.pdf) In
-  C. Nedellec and C. Rouveirol (Eds.), *Machine Learning:
-    ECML-98*, Lecture Notes in Artificial Intelligence,
-  Vol. 1398. Berlin: Springer, pp. 406-411.
-
-* Weijters, A., and Van den Bosch, A. (1998). Interpretable
-  Neural Networks with BP-SOM. In A.P. del Pobil, J. Mira and M. Ali
-  (Eds.), *Tasks and Methods in Applied Artificial Intelligence:
-    Proceedings of the 11th International Conference on Industrial and
-    Engineering Applications of Artificial Intelligence and Expert
-    Systems*, Vol II, Lecture Notes in Artificial Intelligence, Vol.
-  1416. Berlin: Springer, pp 564-573.
-
-* Weijters, A., and Van den Bosch, A. (1999). [Interpreting
-knowledge representations in BP-SOM.](https://www.jstage.jst.go.jp/article/bhmk1974/26/1/26_1_107/_pdf)
-*Behaviormetrika*, **26:1**, pp. 107-128.
-
-* Weijters, A., Van den Bosch, A., and Postma, E. (2000). [Learning
-  statistically neutral tasks without expert guidance.](https://papers.nips.cc/paper/1780-learning-statistically-neutral-tasks-without-expert-guidance.pdf) In: S.A. Solla,
-  T.K. Leen and K.R. Muller.), *Advances in Neural
-    Information Processing*, Vol. 12. Cambridge, MA: The MIT Press,
-  pp. 73-79.
 
 ## Getting Started
 
@@ -131,14 +93,29 @@ classification error on the test data was 7.80%. At that point, the
 SOM was not used. The network's state at epoch 16 is saved in the file
 exp-grapho-bpsom-a10.bst .
 
+If a hidden unit becomes inactive below a threshold, it gets
+pruned. In the output this is determined on the development set, and
+indicated as follows:
+
+```
+20/100 LRN=1 MAT=1 MSE=0.619 CE=  9.81 USE SOM1= 42.3 
+20/100 LRN=0 MAT=1 MSE=0.612 CE=  9.26 USE SOM1=  0.0 
+20/100 LRN=0 MAT=2 MSE=0.611 CE=  9.25 USE SOM1=  0.0 * 1:-7 1:-8
+20/100 LRN=0 MAT=3 MSE=0.614 CE=  9.65 USE SOM1=  0.0 
+```
+
+This means that at epoch 20, the seventh and eighth hidden units of
+layer one were pruned.
+
 ### Inspecting the log file
 
-After a full experimental run involving learning and testing, a log
-file is produced which can be inspected afterwards. This allows
-ascertaining whether and to what extent the SOM became organized
-during learning, and how it influenced hidden unit activation
-behavior. After a dump of the full configuration and the distribution
-of classes in the training data, the log file contains for each epoch
+During a full experimental run involving learning and testing, a
+detailed log file is produced which can be inspected afterwards. This
+allows ascertaining whether and to what extent the SOM became
+organized during learning, and how it influenced hidden unit
+activation behavior. After a dump of the full configuration and the
+distribution of classes in the training data, the log file contains
+for each epoch
 
 * the learning progress as also displayed in the console as stdout;
 * the majority class labeling for the SOM(s);
@@ -205,6 +182,48 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 <!---
 See also the list of [contributors](https://github.com/your/project/contributors) who participate in this project.
 --->
+
+## Further reading
+
+Further reading:
+
+* Weijters, A. (1995). The BP-SOM architecture and learning algorithm.
+  *Neural Processing Letters*, **2:6**, pp. 13-16.
+
+* Weijters, A., Van den Bosch, A., and Van den Herik,
+  H.J. (1997). Behavioural aspects of combining back-propagation and
+  self-organizing maps. *Connection
+    Science*, **9:3**, pp. 253-252.
+
+* Weijters, A., Van den Herik, H.J., Van den Bosch, A., and
+Postma, E. (1997). [Avoiding overfitting with BP-SOM.](https://www.ijcai.org/Proceedings/97-2/Papers/051.pdf) In
+*Proceedings of the Fifteenth International Joint Conference on
+    Artificial Intellgence*, IJCAI-97, pp. 1140-1145.
+
+* Weijters, A., Van den Bosch, A., and Van den
+  Herik, H.J. (1998). [Interpretable neural networks with BP-SOM.](https://link.springer.com/content/pdf/10.1007%2FBFb0026711.pdf) In
+  C. Nedellec and C. Rouveirol (Eds.), *Machine Learning:
+    ECML-98*, Lecture Notes in Artificial Intelligence,
+  Vol. 1398. Berlin: Springer, pp. 406-411.
+
+* Weijters, A., and Van den Bosch, A. (1998). Interpretable
+  Neural Networks with BP-SOM. In A.P. del Pobil, J. Mira and M. Ali
+  (Eds.), *Tasks and Methods in Applied Artificial Intelligence:
+    Proceedings of the 11th International Conference on Industrial and
+    Engineering Applications of Artificial Intelligence and Expert
+    Systems*, Vol II, Lecture Notes in Artificial Intelligence, Vol.
+  1416. Berlin: Springer, pp 564-573.
+
+* Weijters, A., and Van den Bosch, A. (1999). [Interpreting
+knowledge representations in BP-SOM.](https://www.jstage.jst.go.jp/article/bhmk1974/26/1/26_1_107/_pdf)
+*Behaviormetrika*, **26:1**, pp. 107-128.
+
+* Weijters, A., Van den Bosch, A., and Postma, E. (2000). [Learning
+  statistically neutral tasks without expert guidance.](https://papers.nips.cc/paper/1780-learning-statistically-neutral-tasks-without-expert-guidance.pdf) In: S.A. Solla,
+  T.K. Leen and K.R. Muller.), *Advances in Neural
+    Information Processing*, Vol. 12. Cambridge, MA: The MIT Press,
+  pp. 73-79.
+
 
 ## License
 
