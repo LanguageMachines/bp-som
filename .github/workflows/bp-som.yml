@@ -1,0 +1,63 @@
+---
+name: C/C++ CI
+
+on:
+  schedule:
+    - cron: "0 20 3 * 5"  # run test once a month
+  push:
+    branches:
+      - master
+      - develop
+    paths:
+      - configure.ac
+      - 'src/**'
+      - 'include/**'
+      - '.github/workflows/*'
+
+  pull_request:
+    branches: [master]
+
+jobs:
+  notification:
+    runs-on: ubuntu-latest
+    name: Notifications
+    steps:
+      - name: IRC notification of starting the builds
+        uses: LanguageMachines/ticcactions/irc-init@v1
+
+  build:
+    runs-on: ${{ matrix.os }}
+    needs: notification
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        compiler: [g++ -std=c++17, clang++ -std=c++17]
+
+    steps:
+
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.12.1
+        with:
+          access_token: ${{ github.token }}
+
+      - uses: actions/checkout@v4.1.1
+
+      - uses: LanguageMachines/ticcactions/cpp-build-env@v1
+      - uses: LanguageMachines/ticcactions/cpp-dependencies@v1
+      - uses: LanguageMachines/ticcactions/irc-nick@v1
+
+      - uses: LanguageMachines/ticcactions/setup-cppcheck@v1
+      - name: Static Code-check
+        if: ${{ env.action_status == '' }}
+        run: cppcheck ${{ env.cpc_opts }} .
+
+      - uses: LanguageMachines/ticcactions/cpp-safe-build@v1
+
+      - name: Notify IRC of results
+        uses: LanguageMachines/ticcactions/irc-status@v1
+        with:
+          branch: ${{ github.ref_name }}
+          nickname: ${{ env.nick }}
+          step: test
+          status: ${{ env.action_status }}
+          details: ${{ env.action_details }}
