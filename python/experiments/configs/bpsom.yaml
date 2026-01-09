@@ -1,0 +1,54 @@
+# BP-SOM BERT Configuration for GLUE Tasks
+# Fine-tuning with Self-Organizing Map guided learning
+
+model:
+  name: "bert-base-uncased"
+  dropout: 0.1
+
+# BP-SOM specific configuration
+# Based on parameters from the C implementation
+bpsom:
+  # Hidden layer size (between BERT output and classifier)
+  hidden_size: 128
+
+  # SOM grid configuration
+  som_grid_size: 20           # 20x20 SOM grid
+
+  # SOM error weight (α parameter)
+  # Controls balance between BP error and SOM error
+  # error = (1 - α) * bp_error + α * som_error
+  som_error_weight: 0.25
+
+  # SOM learning rate schedule
+  # Decays from max to min over epochs
+  som_lr_max: 0.20
+  som_lr_min: 0.05
+
+  # SOM neighborhood size schedule
+  # Controls radius of update neighborhood
+  # Decays from max to min over epochs
+  som_context_max: 2
+  som_context_min: 0
+
+  # Reliability threshold (0-1)
+  # Minimum reliability required to use SOM error
+  # Only use SOM error if partial winner cell has >= this reliability
+  reliability_threshold: 0.95
+
+# Unit pruning configuration
+pruning:
+  enabled: true
+
+  # Standard deviation threshold
+  # Units with std < threshold are pruned as inactive
+  threshold: 0.02
+
+# Training configuration
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 2e-5
+  warmup_steps: 500
+  early_stopping_patience: 3
+
+# Task configuration will be set by run_glue.py based on --task argument

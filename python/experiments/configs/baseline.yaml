@@ -1,0 +1,15 @@
+# Baseline BERT Configuration for GLUE Tasks
+# Standard fine-tuning without BP-SOM
+
+model:
+  name: "bert-base-uncased"
+  dropout: 0.1
+
+training:
+  epochs: 10
+  batch_size: 32
+  learning_rate: 2e-5
+  warmup_steps: 500
+  early_stopping_patience: 3
+
+# Task configuration will be set by run_glue.py based on --task argument

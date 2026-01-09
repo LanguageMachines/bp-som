@@ -1,0 +1,27 @@
+# BP-SOM BERT Test Configuration
+# Smaller configuration for quick testing
+
+model:
+  name: "bert-base-uncased"
+  dropout: 0.1
+
+bpsom:
+  hidden_size: 32               # Smaller for faster testing
+  som_grid_size: 10             # Smaller 10×10 grid
+  som_error_weight: 0.25
+  som_lr_max: 0.20
+  som_lr_min: 0.05
+  som_context_max: 2
+  som_context_min: 0
+  reliability_threshold: 0.95
+
+pruning:
+  enabled: true
+  threshold: 0.02
+
+training:
+  epochs: 3                     # Just 3 epochs for testing
+  batch_size: 16                # Smaller batch size
+  learning_rate: 0.00002
+  warmup_steps: 100
+  early_stopping_patience: 2
