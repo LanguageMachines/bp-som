@@ -5,17 +5,18 @@ Implements the SOM component that continuously learns from hidden layer activati
 and provides clustering-based error signals during backpropagation.
 
 Based on the original C implementation in include/bpsom/som.h
+Optimized with vectorized operations for GPU acceleration.
 """
 
 import torch
 import torch.nn as nn
-import numpy as np
 from typing import Optional, Tuple
 
 
 class SelfOrganizingMap(nn.Module):
     """
     Self-Organizing Map for BP-SOM architecture.
+    Optimized with vectorized operations for GPU acceleration.
 
     The SOM maintains a 2D grid of prototype vectors and provides:
     1. Continuous unsupervised learning from activations
@@ -92,118 +93,73 @@ class SelfOrganizingMap(nn.Module):
         self.som_usage_count = 0
         self.total_examples = 0
 
-    def compute_distance(self, activation: torch.Tensor, prototype: torch.Tensor) -> torch.Tensor:
+    def get_distance_matrix(self, x: torch.Tensor, w: torch.Tensor) -> torch.Tensor:
         """
-        Compute Euclidean distance between activation and prototype.
-        Based on count_distance in som.h:13
+        Compute squared Euclidean distance matrix between batch x and vectors w.
+        Vectorized computation for GPU acceleration.
 
         Args:
-            activation: [input_dim] activation vector
-            prototype: [input_dim] prototype vector
+            x: (B, D) batch of activation vectors
+            w: (N, D) SOM prototype vectors (flattened grid)
 
         Returns:
-            Squared Euclidean distance
+            (B, N) distance matrix
         """
-        return torch.sum((activation - prototype) ** 2)
+        x_norm = (x ** 2).sum(1).view(-1, 1)
+        w_norm = (w ** 2).sum(1).view(1, -1)
+        dist = x_norm + w_norm - 2.0 * torch.mm(x, w.t())
+        return torch.clamp(dist, 0.0, None)
 
-    def find_best_matching_unit(
+    def update_som_network_batch(
         self,
-        activation: torch.Tensor,
-        class_label: Optional[int] = None
-    ) -> Tuple[int, int, float]:
-        """
-        Find best matching unit (BMU) in SOM grid.
-        Optionally constrain to cells with specific class label (partial winner).
-
-        Based on process_som_vectors in som.h:24-98
-
-        Args:
-            activation: [input_dim] activation vector
-            class_label: If provided, only consider cells with this label
-
-        Returns:
-            (x, y, distance): Coordinates and distance of BMU
-        """
-        min_dist = float('inf')
-        bmu_x, bmu_y = 0, 0
-
-        for x in range(self.grid_size):
-            for y in range(self.grid_size):
-                # Skip if constraining by class and this cell doesn't match
-                if class_label is not None and self.cell_labels[x, y] != class_label:
-                    continue
-
-                dist = self.compute_distance(activation, self.som_vectors[x, y])
-
-                if dist < min_dist:
-                    min_dist = dist
-                    bmu_x, bmu_y = x, y
-
-        # Convert to float (handles both tensor and float('inf') cases)
-        if isinstance(min_dist, torch.Tensor):
-            min_dist = min_dist.item()
-
-        return bmu_x, bmu_y, min_dist
-
-    def update_som_network(
-        self,
-        activation: torch.Tensor,
-        bmu_x: int,
-        bmu_y: int,
+        activations: torch.Tensor,
+        bmu_indices: torch.Tensor,
         som_lr: float,
         som_context: int
     ):
         """
-        Update SOM prototypes using neighborhood learning.
-        Based on update_som_network in som.h:147-159
+        Update SOM prototypes using batch neighborhood learning.
+        Vectorized for efficient GPU computation.
 
         Args:
-            activation: [input_dim] current activation
-            bmu_x, bmu_y: Best matching unit coordinates
+            activations: (B, D) batch of activations
+            bmu_indices: (B,) flattened BMU indices
             som_lr: Current SOM learning rate
             som_context: Current neighborhood radius
         """
-        # Update BMU and neighborhood
-        for x in range(max(0, bmu_x - som_context), min(self.grid_size, bmu_x + som_context + 1)):
-            for y in range(max(0, bmu_y - som_context), min(self.grid_size, bmu_y + som_context + 1)):
-                # Manhattan distance for neighborhood
-                dist = max(abs(x - bmu_x), abs(y - bmu_y))
+        B = activations.size(0)
+        G = self.grid_size
 
-                # Update power decreases with distance: lr / 2^dist
-                update_power = som_lr / (2.0 ** dist)
+        # Convert flat indices to 2D coordinates
+        bmu_x = bmu_indices // G
+        bmu_y = bmu_indices % G
 
-                # Update: vector += update_power * (activation - vector)
-                self.som_vectors[x, y] += update_power * (activation - self.som_vectors[x, y])
+        # Create coordinate grid (G, G)
+        y_grid, x_grid = torch.meshgrid(
+            torch.arange(G, device=activations.device),
+            torch.arange(G, device=activations.device),
+            indexing='ij'
+        )
 
-    def compute_som_error(
-        self,
-        activation: torch.Tensor,
-        class_label: int,
-        reliability: float,
-        prototype: torch.Tensor
-    ) -> Optional[torch.Tensor]:
-        """
-        Compute SOM-based error signal for backpropagation.
-        Based on bp.h:111-119
+        # Compute Chebyshev distances for all grid cells to all BMUs
+        # Expand to (B, G, G)
+        dist_x = torch.abs(x_grid.unsqueeze(0) - bmu_x.view(B, 1, 1))
+        dist_y = torch.abs(y_grid.unsqueeze(0) - bmu_y.view(B, 1, 1))
+        dist_chebyshev = torch.max(dist_x, dist_y)
 
-        Args:
-            activation: [input_dim] current activation
-            class_label: True class label
-            reliability: Reliability of the partial winner cell
-            prototype: [input_dim] partial winner prototype
+        # Compute update powers with neighborhood mask
+        mask = (dist_chebyshev <= som_context).float()
+        powers = som_lr / (2.0 ** dist_chebyshev.float())
+        powers = powers * mask  # (B, G, G)
 
-        Returns:
-            SOM error vector or None if reliability too low
-        """
-        # Only use SOM error if reliability meets threshold
-        if reliability < self.reliability_threshold:
-            return None
+        # Accumulate updates: W_new = W_old + sum_k(p_k * x_k) - W_old * sum_k(p_k)
+        denom = powers.sum(dim=0).unsqueeze(-1)  # (G, G, 1)
 
-        # som_error = 0.01 * reliability * (prototype - activation)
-        # The 0.01 factor matches the C implementation
-        som_error = 0.01 * reliability * (prototype - activation)
+        powers_flat = powers.view(B, -1)  # (B, G*G)
+        num_flat = torch.matmul(powers_flat.t(), activations)  # (G*G, D)
+        numerator = num_flat.view(G, G, -1)
 
-        return som_error
+        self.som_vectors += (numerator - self.som_vectors * denom)
 
     def forward(
         self,
@@ -214,7 +170,7 @@ class SelfOrganizingMap(nn.Module):
         training: bool = True
     ) -> Tuple[Optional[torch.Tensor], dict]:
         """
-        Process activations through SOM.
+        Process activations through SOM using vectorized operations.
 
         During training:
         - Updates SOM prototypes
@@ -237,66 +193,59 @@ class SelfOrganizingMap(nn.Module):
         batch_size = activations.size(0)
 
         # Compute current SOM parameters (scheduled decay)
-        # Based on update_som_context_and_lr in bpsom.cc:362
         progress = (max_epochs - epoch) / max_epochs if max_epochs > 0 else 0
-        progress = max(0, min(1, progress))  # Clamp to [0, 1]
+        progress = max(0, min(1, progress))
 
         som_context = self.som_context_min + int(
             (progress ** 4) * (self.som_context_max - self.som_context_min)
         )
         som_lr = self.som_lr_min + (progress ** 1) * (self.som_lr_max - self.som_lr_min)
 
-        # Initialize output
-        som_errors = [] if training and labels is not None else None
+        # Flatten SOM vectors for distance computation: (G*G, D)
+        flat_som = self.som_vectors.view(-1, self.input_dim)
+
+        # 1. Compute Distances and Global BMUs (vectorized)
+        dists = self.get_distance_matrix(activations, flat_som)  # (B, G*G)
+        min_dists, bmu_indices = torch.min(dists, dim=1)  # (B,)
 
         # Statistics
-        total_dist = 0.0
+        total_dist = torch.sqrt(min_dists).sum().item()
         som_used_count = 0
+        som_errors = None
 
-        # Process each example in batch
-        for i in range(batch_size):
-            activation = activations[i]  # [input_dim]
-            label = labels[i].item() if labels is not None else None
+        if training and labels is not None:
+            # 2. Compute Class-Specific BMUs and Errors (vectorized)
+            # Mask distances where cell_label != label
+            flat_labels = self.cell_labels.view(-1)
+            # (B, G*G) mask: True where cell label doesn't match sample label
+            label_mask = (flat_labels.unsqueeze(0) != labels.unsqueeze(1))
 
-            # Find best matching unit (overall winner)
-            bmu_x, bmu_y, min_dist = self.find_best_matching_unit(activation)
-            total_dist += np.sqrt(min_dist)
+            class_dists = dists.clone()
+            class_dists[label_mask] = float('inf')
 
-            if training and labels is not None:
-                # Find partial winner (best matching unit with same class)
-                part_x, part_y, part_dist = self.find_best_matching_unit(activation, class_label=label)
+            _, class_bmu_indices = torch.min(class_dists, dim=1)
 
-                # Get reliability of partial winner
-                reliability = self.cell_reliability[part_x, part_y].item() / 100.0  # Convert from percentage
+            # Get prototypes and reliability for class BMUs
+            class_bmu_vectors = flat_som[class_bmu_indices]  # (B, D)
+            flat_reliability = self.cell_reliability.view(-1)
+            reliabilities = flat_reliability[class_bmu_indices] / 100.0  # (B,)
 
-                # Compute SOM error
-                som_error = self.compute_som_error(
-                    activation,
-                    label,
-                    reliability,
-                    self.som_vectors[part_x, part_y]
-                )
+            # Compute SOM errors
+            # Valid if reliability >= threshold
+            valid_mask = (reliabilities >= self.reliability_threshold).float().unsqueeze(1)
+            som_errors = 0.01 * reliabilities.unsqueeze(1) * (class_bmu_vectors - activations)
+            som_errors = som_errors * valid_mask
 
-                if som_error is not None:
-                    som_errors.append(som_error)
-                    som_used_count += 1
-                else:
-                    som_errors.append(torch.zeros_like(activation))
+            som_used_count = (reliabilities >= self.reliability_threshold).sum().item()
 
-                # Update SOM network
-                if min_dist > 1e-4:  # DONOTHING threshold
-                    self.update_som_network(activation, bmu_x, bmu_y, som_lr, som_context)
+            # 3. Update SOM Network (vectorized batch update)
+            if min_dists.mean() > 1e-4:
+                self.update_som_network_batch(activations, bmu_indices, som_lr, som_context)
 
-        # Convert errors to tensor
-        if som_errors is not None:
-            som_errors = torch.stack(som_errors)  # [batch_size, input_dim]
-
-        # Update statistics
         self.total_distance += total_dist
         self.som_usage_count += som_used_count
         self.total_examples += batch_size
 
-        # Compile stats
         stats = {
             'som_lr': som_lr,
             'som_context': som_context,
@@ -308,30 +257,37 @@ class SelfOrganizingMap(nn.Module):
 
     def update_cell_labels(self, activations: torch.Tensor, labels: torch.Tensor):
         """
-        Update SOM cell class labels based on training data.
+        Update SOM cell class labels based on training data using batched processing.
         Called after each epoch on training set.
-        Based on count_som_cell_winners in som.h:197-230
 
         Args:
             activations: [num_examples, input_dim]
             labels: [num_examples] class labels
         """
-        # Reset counters
         self.cell_class_counts.zero_()
 
-        # Count class mappings for each cell
+        flat_som = self.som_vectors.view(-1, self.input_dim)
+        batch_size = 1024  # Process in chunks to save memory
+
         with torch.no_grad():
-            for i in range(activations.size(0)):
-                activation = activations[i]
-                label = labels[i].item()
+            for i in range(0, activations.size(0), batch_size):
+                batch_act = activations[i:i + batch_size]
+                batch_lbl = labels[i:i + batch_size]
 
-                bmu_x, bmu_y, _ = self.find_best_matching_unit(activation)
-                self.cell_class_counts[bmu_x, bmu_y, label] += 1
+                dists = self.get_distance_matrix(batch_act, flat_som)
+                _, bmu_indices = torch.min(dists, dim=1)
 
-        # Determine majority label and reliability for each cell
+                bmu_x = bmu_indices // self.grid_size
+                bmu_y = bmu_indices % self.grid_size
+
+                # Accumulate counts
+                for j, label in enumerate(batch_lbl):
+                    self.cell_class_counts[bmu_x[j], bmu_y[j], label] += 1
+
+        # Update labels and reliability
         for x in range(self.grid_size):
             for y in range(self.grid_size):
-                counts = self.cell_class_counts[x, y]  # [num_classes + 1]
+                counts = self.cell_class_counts[x, y]
                 total = counts.sum().item()
 
                 if total > 0:

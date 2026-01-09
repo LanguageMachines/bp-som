@@ -352,12 +352,14 @@ class BPSOMBertForSequenceClassification(BertPreTrainedModel):
             dataloader: Training data loader
             device: Device to use
         """
+        from tqdm import tqdm
+
         all_activations = []
         all_labels = []
 
         self.eval()
         with torch.no_grad():
-            for batch in dataloader:
+            for batch in tqdm(dataloader, desc="Updating SOM labels"):
                 input_ids = batch['input_ids'].to(device)
                 attention_mask = batch['attention_mask'].to(device)
                 labels = batch['labels'].to(device)
@@ -370,10 +372,11 @@ class BPSOMBertForSequenceClassification(BertPreTrainedModel):
                 z = torch.nn.functional.linear(cls_output, self.bpsom_hidden.weight, self.bpsom_hidden.bias)
                 activations = self.bpsom_hidden.activation(z)
 
-                all_activations.append(activations.cpu())
-                all_labels.append(labels.cpu())
+                # Keep on device for GPU-accelerated SOM operations
+                all_activations.append(activations)
+                all_labels.append(labels)
 
-        # Concatenate all
+        # Concatenate all (on device)
         all_activations = torch.cat(all_activations, dim=0)
         all_labels = torch.cat(all_labels, dim=0)
 
