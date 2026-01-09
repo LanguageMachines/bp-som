@@ -8,24 +8,16 @@ AC_CONFIG_SRCDIR([.])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h])
 
-if test x"${CXXFLAGS+set}" = xset; then
-  # the user set CXXFLAGS; don't override it.
-  cxx_flags_were_set=true
-else
-  cxx_flags_were_set=false
-fi
-if $cxx_flags_were_set; then
-  CXXFLAGS=$CXXFLAGS
-fi
+AX_REQUIRE_DEFINED([AX_CXX_COMPILE_STDCXX_17])
 
 # Checks for programs.
 AC_PROG_CXX( [g++] )
+AX_CXX_COMPILE_STDCXX_17
 
 # when running tests, use CXX
 AC_LANG([C++])
 
 # use libtool
-LT_INIT
 LT_INIT
 
 #checks for libraries.
@@ -36,6 +28,7 @@ LT_INIT
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+AC_CHECK_FUNCS([floor pow rint sqrt ])
 
 AC_CONFIG_FILES([
   Makefile
